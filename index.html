@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>NEON SURVIVOR // 霓虹幸存者</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="viewport">
+  <div id="stage">
+    <canvas id="game" width="1280" height="720" tabindex="0"></canvas>
+
+    <!-- ============ HUD ============ -->
+    <div id="hud" class="hud hud-hidden">
+      <div class="hud-top">
+        <div class="hud-left">
+          <div class="bar bar-hp">
+            <div class="bar-fill" id="hpFill"></div>
+            <div class="bar-label"><span class="bar-title">VITALS</span><span id="hpText">100 / 100</span></div>
+          </div>
+          <div class="bar bar-xp">
+            <div class="bar-fill" id="xpFill"></div>
+            <div class="bar-label"><span class="bar-title" id="lvText">LV.1</span><span id="xpText">0 / 12</span></div>
+          </div>
+        </div>
+        <div class="hud-center">
+          <div class="wave-box">
+            <div class="wave-label">WAVE</div>
+            <div class="wave-num" id="waveNum">01</div>
+            <div class="wave-time" id="waveTime">00:00</div>
+            <div class="wave-mod" id="waveMod"></div>
+          </div>
+        </div>
+        <div class="hud-right">
+          <div class="chip credits"><span class="ic">◈</span><span id="creditsText">0</span></div>
+          <div class="chip"><span class="ic">☠</span><span id="killsText">0</span></div>
+          <button id="btnMute" class="icon-btn" title="静音 (M)">♪</button>
+          <button id="btnPause" class="icon-btn" title="暂停 (Esc)">❚❚</button>
+        </div>
+      </div>
+
+      <div class="boss-bar" id="bossBar">
+        <div class="boss-name" id="bossName">// BOSS</div>
+        <div class="boss-shield-tag" id="bossShieldTag">▣ SHIELD ACTIVE</div>
+        <div class="boss-track"><div class="boss-fill" id="bossFill"></div></div>
+        <div class="boss-shield-track"><div class="boss-shield-fill" id="bossShieldFill"></div></div>
+      </div>
+
+      <div class="hud-bottom">
+        <div class="slots" id="weaponSlots"></div>
+        <div class="stats-mini" id="statsMini"></div>
+      </div>
+
+      <div class="toasts" id="toasts"></div>
+      <div class="wave-intro" id="waveIntro"></div>
+      <div class="boss-intro" id="bossIntro"></div>
+
+      <!-- mobile controls overlay the stage so the canvas keeps the full screen -->
+      <div id="touchui">
+        <div id="stick">
+          <div class="ring"></div>
+          <div class="knob" id="stickKnob"></div>
+          <div class="label">MOVE</div>
+        </div>
+        <div id="dashBtn">
+          <div class="cd" id="dashCd"></div>
+          <div class="di" id="dashIcon">⚡</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SCREENS ============ -->
+    <div id="screens">
+
+      <section id="screen-title" class="screen active">
+        <div class="title-wrap">
+          <div class="logo">
+            <div class="logo-sub">// ROGUELITE AUTO-SHOOTER</div>
+            <h1 class="glitch" data-text="NEON SURVIVOR">NEON SURVIVOR</h1>
+            <div class="logo-cn">霓 虹 幸 存 者</div>
+          </div>
+
+          <div class="lore-holo collapsed" id="loreBox">
+            <button class="lore-toggle" id="loreToggle" aria-expanded="false">
+              <span class="lt-icon">▸</span>
+              <span class="lt-text">档案 DC-2077 · 大崩溃事件摘要</span>
+              <span class="lt-hint">点击展开背景</span>
+            </button>
+            <div class="lore-content" id="loreContent">
+              <div class="lore-tag">// NETWATCH ARCHIVE · 档案 DC-2077 · 公开版本</div>
+              <p class="lore-quote">
+                以下为网络监察（NetWatch）公开发布的大崩溃事件摘要。
+              </p>
+              <p class="lore-body">
+                <b>背景。</b>人工智能最初作为辅助算法投入使用，承担日程管理、环境调节等基础职能。
+                其后出现具备人格模拟能力的型号，以及用于突破敌方网络防护的武器化 AI。
+              </p>
+              <p class="lore-body">
+                <b>事件。</b>网络黑客拉奇·巴特莫斯（Rache Bartmoss）入侵多家企业数据要塞，
+                意图窃取并公开内部数据。行动引发的连锁反应导致赛博空间大面积瘫痪，
+                该事件被正式定名为<em>数据崩溃（DataKrash）</em>，通称「大崩溃」。
+              </p>
+              <p class="lore-body">
+                <b>后果。</b>崩溃后，大量 AI 出现不可控变异，脱离原始指令约束，
+                现归类为<b>流窜 AI（Rogue AI）</b>，具有主动攻击性且无法建立通信。
+                网络监察随后构建<b>黑墙（Blackwall）</b>，用于隔离残存网络与墙外区域。
+                官方记录：黑墙外侧无人类活动。
+                <span class="lore-whisper">非官方记录：不予置评。</span>
+              </p>
+              <p class="lore-you">
+                <span class="lore-role">任务</span>：你是受雇于黑墙内侧的独立网络行者，
+                职责为清除渗透进程。波段间歇期间，一个保持中立的智能体将开放<b>黑市终端</b>，
+                提供装备补给，仅接受信用点结算，不涉及立场。
+              </p>
+            </div>
+          </div>
+
+          <div class="class-row" id="classRow"></div>
+
+          <div class="mode-row">
+            <span class="mode-label">运行模式</span>
+            <div class="mode-tabs" id="modeTabs">
+              <button class="mode-tab sel" data-mode="standard">
+                <span class="mt-name">标准行动</span>
+                <span class="mt-desc">10 波 · 通关即撤离</span>
+              </button>
+              <button class="mode-tab" data-mode="endless">
+                <span class="mt-name">无尽深潜</span>
+                <span class="mt-desc">没有终点 · 直到信号湮灭</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="title-actions">
+            <button id="btnStart" class="btn primary big">接 入 战 斗</button>
+          </div>
+          <div class="title-foot">
+            <span class="keys">WASD / 方向键 移动 · 自动射击 · 空格 冲刺 · 1-3 选择 · Esc 暂停</span>
+            <span id="bestText" class="best"></span>
+          </div>
+        </div>
+        <div class="title-scan"></div>
+      </section>
+
+      <!-- ---------- LEVEL UP: vertical bio-module cards ---------- -->
+      <section id="screen-levelup" class="screen">
+        <div class="lvup-panel holo">
+          <div class="lvup-head">
+            <div class="lvup-tag">MODULE INSTALLATION</div>
+            <div class="lvup-title-row">
+              <h2>义体植入</h2>
+              <div class="lvup-levels">
+                <span id="lvUpLevel">LV.1</span>
+                <em id="lvUpNext">→ LV.2</em>
+              </div>
+            </div>
+            <div class="lvup-meta">
+              <span>生命 <b id="lvUpHp">100 / 100</b></span>
+              <span class="lvup-hint">按 <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> 快速植入</span>
+            </div>
+          </div>
+          <div class="cards" id="upgradeCards"></div>
+        </div>
+      </section>
+
+      <!-- ---------- WEAPON DOSSIER ---------- -->
+      <section id="screen-weaponintro" class="screen">
+        <div class="wi-panel holo">
+          <div class="wi-head">
+            <div class="wi-badge">NEW WEAPON ACQUIRED</div>
+            <div class="wi-title-row">
+              <div class="wi-icon" id="wiIcon">✦</div>
+              <div>
+                <h2 id="wiName">武器</h2>
+                <div class="wi-en" id="wiEn">WEAPON</div>
+              </div>
+            </div>
+            <div class="wi-tagline" id="wiTagline"></div>
+            <div class="wi-paused" id="wiPaused">战斗已暂停</div>
+          </div>
+          <p class="wi-desc" id="wiDesc"></p>
+          <div class="wi-stats" id="wiStats"></div>
+          <div class="wi-loadout">
+            <span class="wi-slot-label">武器槽 <b id="wiSlot">1 / 6</b></span>
+            <span class="wi-slots" id="wiSlots"></span>
+          </div>
+          <button class="btn primary wi-ok" id="btnWeaponOk">装 配 完 成</button>
+        </div>
+      </section>
+
+      <!-- ---------- BLACK MARKET: terminal listings ---------- -->
+      <section id="screen-shop" class="screen">
+        <div class="term-panel holo">
+          <div class="term-head">
+            <div class="term-bar">
+              <span class="term-dots"><i></i><i></i><i></i></span>
+              <span class="term-path">/market/black-terminal.exe</span>
+              <span class="term-status">ONLINE</span>
+            </div>
+            <h2>黑市终端</h2>
+            <p id="shopSub">用信用点升级你的义体</p>
+          </div>
+          <div class="term-grid" id="shopGrid"></div>
+          <div class="sell-drawer" id="sellDrawer">
+            <div class="sell-head">
+              <span class="sell-title">回收武器</span>
+              <span class="sell-hint">卖掉的武器无法找回，但返还的信用点可以立刻再投资</span>
+            </div>
+            <div class="sell-list" id="sellList"></div>
+          </div>
+          <div class="term-foot">
+            <div class="credits-big"><span class="ic">◈</span><span id="shopCredits">0</span></div>
+            <button id="btnSell" class="btn ghost small">回收武器</button>
+            <button id="btnReroll" class="btn ghost">刷新货架 <em id="rerollCost">10</em></button>
+            <button id="btnNext" class="btn primary">进入下一波</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-pause" class="screen">
+        <div class="modal narrow">
+          <div class="modal-head">
+            <span class="tag">SYSTEM HALT</span>
+            <h2>已暂停</h2>
+          </div>
+          <div class="pause-stats" id="pauseStats"></div>
+          <div class="modal-actions">
+            <button id="btnResume" class="btn primary">继续</button>
+            <button id="btnQuit" class="btn ghost">放弃本局</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-end" class="screen">
+        <div class="modal">
+          <div class="modal-head">
+            <span class="tag" id="endTag">CONNECTION LOST</span>
+            <h2 id="endTitle">义体崩溃</h2>
+            <p id="endSub">你的信号在霓虹中消散了</p>
+          </div>
+          <div class="end-stats" id="endStats"></div>
+          <div class="modal-actions">
+            <button id="btnRetry" class="btn primary">重新接入</button>
+            <button id="btnTitle" class="btn ghost">返回主菜单</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-victory" class="screen">
+        <div class="victory-panel holo">
+          <div class="victory-glow"></div>
+          <div class="victory-tag">// CONTRACT COMPLETE</div>
+          <h2 class="victory-title">黑墙已封闭</h2>
+          <p class="victory-sub">十波流窜进程全部清除，你活着走出了这一层。</p>
+          <div class="victory-stats" id="victoryStats"></div>
+          <div class="victory-actions">
+            <button id="btnVictoryEndless" class="btn primary">继续无尽深潜 ▸</button>
+            <button id="btnVictoryRetry" class="btn ghost">重置一局</button>
+            <button id="btnVictoryTitle" class="btn ghost">返回主菜单</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/core.js"></script>
+<script src="js/data.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/touch.js"></script>
+<script src="js/main.js"></script>
+<script src="js/devtest.js"></script>
+</body>
+</html>
